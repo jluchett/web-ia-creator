@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "description": "Contrato de datos agnóstico y validaciones compartidas para WebCreator AI",
   "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./*": "./*"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest"
