@@ -1,0 +1,14 @@
+.appContainer {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .appContainer {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}
