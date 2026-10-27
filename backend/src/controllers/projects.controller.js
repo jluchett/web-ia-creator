@@ -1,5 +1,7 @@
 import { MasterJsonSchema } from '@webcreator/shared';
 import { Project } from '../models/Project.model.js';
+import { runConsultantAgent } from '../agents/consultantAgent.js';
+import { generateLogoOptions } from '../tools/brandTools.js';
 
 const PartialMasterJsonSchema = MasterJsonSchema.deepPartial();
 
@@ -81,6 +83,108 @@ export const updateMasterJson = async (req, res) => {
     return res.status(200).json({
       success: true,
       data: updated || project
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+export const handleProjectChat = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { message } = req.body;
+
+    const project = await Project.findById(id);
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        error: 'Project not found'
+      });
+    }
+
+    let agentResult;
+    try {
+      agentResult = await runConsultantAgent({
+        message,
+        currentMasterJson: project.master_json || {}
+      });
+    } catch (agentError) {
+      // Interceptar error Zod ante alucinaciones de la IA (Caso 2 SDD)
+      if (agentError.name === 'ZodError' || agentError.issues) {
+        return res.status(422).json({
+          success: false,
+          error: 'Error de validación SDD en argumentos de IA',
+          issues: agentError.issues || agentError.message
+        });
+      }
+      throw agentError;
+    }
+
+    const { reply, tool_executed, validated_data } = agentResult;
+
+    if (tool_executed === 'setBrandIdentity' && validated_data) {
+      const currentMaster = project.master_json || {};
+      const updatedMaster = {
+        ...currentMaster,
+        project_meta: {
+          ...(currentMaster.project_meta || {}),
+          ...validated_data.project_meta
+        },
+        branding: {
+          ...(currentMaster.branding || {}),
+          ...validated_data.branding
+        }
+      };
+
+      project.master_json = updatedMaster;
+      project.status = 'brand_defined';
+      project.current_phase = 2;
+      await project.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      reply,
+      tool_executed,
+      project
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+export const getProjectLogoOptions = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { business_name, sector, primary_color } = req.body;
+
+    const project = await Project.findById(id);
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        error: 'Project not found'
+      });
+    }
+
+    const bName = business_name || project.master_json?.project_meta?.business_name || 'Mi Negocio';
+    const bSector = sector || project.master_json?.project_meta?.sector || 'General';
+    const pColor = primary_color || project.master_json?.branding?.colors?.primary || '#4A2E1B';
+
+    const logoOptions = await generateLogoOptions({
+      businessName: bName,
+      sector: bSector,
+      primaryColor: pColor
+    });
+
+    return res.status(200).json({
+      success: true,
+      logo_options: logoOptions
     });
   } catch (error) {
     return res.status(500).json({

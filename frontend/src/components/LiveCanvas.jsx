@@ -24,7 +24,13 @@ const MISSIONS = {
   }
 };
 
-export function LiveCanvas({ currentPhase = 1, branding = null }) {
+export function LiveCanvas({
+  currentPhase = 1,
+  branding = null,
+  logoOptions = [],
+  selectedLogoId = null,
+  onSelectLogo = null
+}) {
   const currentMission = MISSIONS[currentPhase] || MISSIONS[1];
 
   return (
@@ -85,6 +91,37 @@ export function LiveCanvas({ currentPhase = 1, branding = null }) {
               </div>
             </div>
           )}
+        </section>
+      )}
+
+      {/* Propuestas de Logo Interactivas (gemini-nano-banana-2.1) */}
+      {logoOptions && logoOptions.length > 0 && (
+        <section className={styles.logosSection}>
+          <h3 className={styles.sectionTitle}>Propuestas de Logo (gemini-nano-banana-2.1)</h3>
+          <div className={styles.logoGrid}>
+            {logoOptions.map((opt) => {
+              const isSelected = selectedLogoId === opt.id;
+              return (
+                <div
+                  key={opt.id}
+                  className={styles.logoCard}
+                  data-testid={`logo-card-${opt.id}`}
+                  data-selected={isSelected ? 'true' : 'false'}
+                >
+                  <span className={styles.logoBadge}>{opt.style}</span>
+                  <h4 className={styles.logoConcept}>{opt.concept}</h4>
+                  <button
+                    type="button"
+                    className={styles.logoSelectBtn}
+                    data-testid={`logo-select-${opt.id}`}
+                    onClick={() => onSelectLogo && onSelectLogo(opt)}
+                  >
+                    {isSelected ? '✓ Seleccionado' : 'Seleccionar Logo'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
         </section>
       )}
 

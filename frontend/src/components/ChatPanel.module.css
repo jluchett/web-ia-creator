@@ -50,6 +50,18 @@
   max-width: 90%;
   line-height: 1.5;
   font-size: 0.925rem;
+  align-self: flex-start;
+}
+
+.messageUser {
+  background-color: rgba(37, 99, 235, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+  max-width: 85%;
+  line-height: 1.5;
+  font-size: 0.925rem;
+  align-self: flex-end;
 }
 
 .messageAuthor {
@@ -57,6 +69,27 @@
   font-weight: 600;
   color: #60a5fa;
   margin-bottom: 0.25rem;
+}
+
+.userAuthor {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #93c5fd;
+  margin-bottom: 0.25rem;
+  text-align: right;
+}
+
+.typingIndicator {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--color-text-muted);
+  padding: 0.5rem 1rem;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
 
 .inputContainer {
@@ -92,6 +125,11 @@
   transition: background-color 0.2s;
 }
 
-.sendButton:hover {
+.sendButton:hover:not(:disabled) {
   background-color: var(--color-primary-hover);
+}
+
+.sendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
