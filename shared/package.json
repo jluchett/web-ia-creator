@@ -1,0 +1,16 @@
+{
+  "name": "@webcreator/shared",
+  "version": "1.0.0",
+  "description": "Contrato de datos agnóstico y validaciones compartidas para WebCreator AI",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.7"
+  }
+}
