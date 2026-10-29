@@ -1,6 +1,6 @@
 ---
 trigger: glob
-globs: ["frontend/**"]
+globs: "frontend/**"
 description: Reglas exclusivas para el Sub-Agente de Frontend (React + Vite + CSS Modules)
 ---
 # Reglas de Frontend (Plataforma Principal)

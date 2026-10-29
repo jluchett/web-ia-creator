@@ -178,11 +178,6 @@
   color: var(--color-text-main);
 }
 
-.logoStyle {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-}
-
 .logoSelectBtn {
   background-color: var(--color-bg-base);
   border: 1px solid var(--color-border);
@@ -207,6 +202,356 @@
   color: #0f172a;
   border-color: #38bdf8;
   font-weight: 600;
+}
+
+/* ==================== MÓDULO 3: SUPERPODERES ==================== */
+.superpowersSection {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+
+.superpowerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.superpowerCard {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.superpowerCard[data-active="true"] {
+  border-color: #10b981;
+  background-color: rgba(16, 185, 129, 0.06);
+}
+
+.superpowerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.superpowerHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.superpowerDesc {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.switchButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.switchTrack {
+  width: 44px;
+  height: 24px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  position: relative;
+  transition: background-color 0.25s;
+}
+
+.switchTrack[data-checked="true"] {
+  background-color: #10b981;
+}
+
+.switchThumb {
+  width: 18px;
+  height: 18px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.25s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.switchTrack[data-checked="true"] .switchThumb {
+  transform: translateX(20px);
+}
+
+/* ==================== MÓDULO 3: WIREFRAME ESTRUCTURADO ==================== */
+.wireframeStructured {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.heroBlock {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .heroBlock {
+    grid-template-columns: 1fr;
+  }
+}
+
+.heroContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.heroHeadline {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  line-height: 1.3;
+}
+
+.heroSubheadline {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.heroCta {
+  align-self: flex-start;
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.heroImageContainer {
+  width: 100%;
+  max-height: 220px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.heroImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.catalogSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.catalogGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.productCard {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.productImage {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.productDetails {
+  padding: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.productName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.productDesc {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  line-height: 1.3;
+}
+
+.productFooter {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.productPrice {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.faqsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.faqItem {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.875rem;
+}
+
+.faqQuestion {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin-bottom: 0.35rem;
+}
+
+.faqAnswer {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+/* ==================== MÓDULO 3: LEAD GATE (MURO DE CONVERSIÓN) ==================== */
+.leadGateCard {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border: 2px solid #38bdf8;
+  border-radius: 0.75rem;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+  box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.2);
+}
+
+.leadGateBadge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  background-color: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border-radius: 9999px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.leadGateTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.leadGateSubtitle {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  max-width: 480px;
+  line-height: 1.4;
+}
+
+.leadGateForm {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.leadGateInput {
+  width: 100%;
+  background-color: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  padding: 0.65rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--color-text-main);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.leadGateInput:focus {
+  border-color: #38bdf8;
+}
+
+.leadGateSubmitBtn {
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+  color: #0f172a;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 4px 10px rgba(56, 189, 248, 0.3);
+}
+
+.leadGateSubmitBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(56, 189, 248, 0.4);
+}
+
+.leadGateSuccessBanner {
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid #10b981;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+  color: #10b981;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
 .wireframePreview {

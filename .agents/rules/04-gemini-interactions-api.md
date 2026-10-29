@@ -1,6 +1,6 @@
 ---
 trigger: glob
-globs: ["backend/**"]
+globs: "backend/**"
 description: Sintaxis exacta del SDK @google/genai e Interactions API para Agente 1
 ---
 # Patrón Oficial de @google/genai (Interactions API)

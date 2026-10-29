@@ -1,6 +1,6 @@
 ---
 trigger: glob
-globs: ["backend/**"]
+globs: "backend/**"
 description: Reglas exclusivas para el Sub-Agente de Backend (Node.js + Express + MongoDB)
 ---
 # Reglas de Backend y Persistencia

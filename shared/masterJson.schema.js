@@ -116,3 +116,13 @@ export const MasterJsonSchema = z.object({
   branding: BrandingSchema,
   dynamic_content: DynamicContentSchema
 });
+
+/**
+ * Esquema de validación para captura y desbloqueo del Muro de Conversión (Lead Gate).
+ */
+export const LeadInfoInputSchema = z.object({
+  full_name: z.string().trim().min(1, 'El nombre completo es obligatorio'),
+  whatsapp: z.string().trim().min(7, 'El número de WhatsApp debe tener al menos 7 dígitos'),
+  email: z.string().trim().email('El correo electrónico no es válido')
+});
+

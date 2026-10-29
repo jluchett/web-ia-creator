@@ -54,3 +54,20 @@ export async function fetchLogoOptions(projectId, params = {}) {
 
   return response.json();
 }
+
+export async function unlockProjectLead(projectId, leadData) {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/unlock-lead`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(leadData)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Error al desbloquear lead: ${response.status}`);
+  }
+
+  return response.json();
+}

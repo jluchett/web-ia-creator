@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { ChatPanel } from './components/ChatPanel.jsx';
 import { LiveCanvas } from './components/LiveCanvas.jsx';
-import { sendChatMessage, updateProjectMasterJson } from './services/api.js';
+import {
+  sendChatMessage,
+  updateProjectMasterJson,
+  unlockProjectLead
+} from './services/api.js';
 import styles from './App.module.css';
 
 export default function App() {
@@ -24,6 +28,24 @@ export default function App() {
       body: 'Inter'
     },
     logo_url: null
+  });
+
+  const [capabilities, setCapabilities] = useState({
+    has_cart: false,
+    has_whatsapp_checkout: false,
+    has_booking: false,
+    has_custom_form: false,
+    has_faq_accordion: false
+  });
+
+  const [dynamicContent, setDynamicContent] = useState(null);
+
+  const [leadInfo, setLeadInfo] = useState({
+    is_unlocked: false,
+    full_name: null,
+    whatsapp: null,
+    email: null,
+    captured_at: null
   });
 
   const [messages, setMessages] = useState([
@@ -69,6 +91,21 @@ export default function App() {
             ...response.project.master_json.branding
           }));
         }
+        if (response.project.master_json?.capabilities) {
+          setCapabilities((prev) => ({
+            ...prev,
+            ...response.project.master_json.capabilities
+          }));
+        }
+        if (response.project.master_json?.dynamic_content) {
+          setDynamicContent(response.project.master_json.dynamic_content);
+        }
+        if (response.project.lead_info) {
+          setLeadInfo((prev) => ({
+            ...prev,
+            ...response.project.lead_info
+          }));
+        }
       }
 
       if (response.logo_options && Array.isArray(response.logo_options)) {
@@ -107,6 +144,41 @@ export default function App() {
     }
   };
 
+  const handleToggleCapability = async (capabilityKey, nextValue) => {
+    setCapabilities((prev) => ({
+      ...prev,
+      [capabilityKey]: nextValue
+    }));
+
+    try {
+      await updateProjectMasterJson(projectId, {
+        capabilities: {
+          [capabilityKey]: nextValue
+        }
+      });
+    } catch (err) {
+      console.error('Error al sincronizar capacidad:', err);
+    }
+  };
+
+  const handleUnlockLead = async (leadData) => {
+    try {
+      const result = await unlockProjectLead(projectId, leadData);
+      if (result && result.project?.lead_info) {
+        setLeadInfo(result.project.lead_info);
+      } else {
+        setLeadInfo((prev) => ({
+          ...prev,
+          ...leadData,
+          is_unlocked: true,
+          captured_at: new Date().toISOString()
+        }));
+      }
+    } catch (err) {
+      console.error('Error al desbloquear lead:', err);
+    }
+  };
+
   return (
     <div className={styles.appContainer}>
       <ChatPanel
@@ -120,6 +192,11 @@ export default function App() {
         logoOptions={logoOptions}
         selectedLogoId={selectedLogoId}
         onSelectLogo={handleSelectLogo}
+        capabilities={capabilities}
+        onToggleCapability={handleToggleCapability}
+        dynamicContent={dynamicContent}
+        leadInfo={leadInfo}
+        onUnlockLead={handleUnlockLead}
       />
     </div>
   );

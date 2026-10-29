@@ -1,7 +1,8 @@
-import { MasterJsonSchema } from '@webcreator/shared';
+import { MasterJsonSchema, LeadInfoInputSchema } from '@webcreator/shared';
 import { Project } from '../models/Project.model.js';
 import { runConsultantAgent } from '../agents/consultantAgent.js';
 import { generateLogoOptions } from '../tools/brandTools.js';
+import { resolveDynamicContentImages } from '../services/imageResolver.js';
 
 const PartialMasterJsonSchema = MasterJsonSchema.deepPartial();
 
@@ -112,7 +113,7 @@ export const handleProjectChat = async (req, res) => {
         currentMasterJson: project.master_json || {}
       });
     } catch (agentError) {
-      // Interceptar error Zod ante alucinaciones de la IA (Caso 2 SDD)
+      // Interceptar error Zod ante alucinaciones de la IA (Violación SDD)
       if (agentError.name === 'ZodError' || agentError.issues) {
         return res.status(422).json({
           success: false,
@@ -142,6 +143,32 @@ export const handleProjectChat = async (req, res) => {
       project.master_json = updatedMaster;
       project.status = 'brand_defined';
       project.current_phase = 2;
+      await project.save();
+    } else if (tool_executed === 'setSiteCapabilities' && validated_data) {
+      const currentMaster = project.master_json || {};
+      const updatedMaster = {
+        ...currentMaster,
+        capabilities: {
+          ...(currentMaster.capabilities || {}),
+          ...validated_data
+        }
+      };
+
+      project.master_json = updatedMaster;
+      project.status = 'capabilities_defined';
+      project.current_phase = 3;
+      await project.save();
+    } else if (tool_executed === 'setDynamicContent' && validated_data) {
+      const resolvedContent = resolveDynamicContentImages(validated_data);
+      const currentMaster = project.master_json || {};
+      const updatedMaster = {
+        ...currentMaster,
+        dynamic_content: resolvedContent
+      };
+
+      project.master_json = updatedMaster;
+      project.status = 'content_defined';
+      project.current_phase = 4;
       await project.save();
     }
 
@@ -185,6 +212,49 @@ export const getProjectLogoOptions = async (req, res) => {
     return res.status(200).json({
       success: true,
       logo_options: logoOptions
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+export const unlockProjectLead = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const validationResult = LeadInfoInputSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: 'Error de validación en datos de contacto',
+        issues: validationResult.error.issues
+      });
+    }
+
+    const project = await Project.findById(id);
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        error: 'Project not found'
+      });
+    }
+
+    const { full_name, whatsapp, email } = validationResult.data;
+    project.lead_info = {
+      is_unlocked: true,
+      full_name,
+      whatsapp,
+      email,
+      captured_at: new Date()
+    };
+
+    await project.save();
+
+    return res.status(200).json({
+      success: true,
+      project
     });
   } catch (error) {
     return res.status(500).json({
