@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChatPanel } from './components/ChatPanel.jsx';
 import { LiveCanvas } from './components/LiveCanvas.jsx';
 import {
+  createProject,
   sendChatMessage,
   updateProjectMasterJson,
-  unlockProjectLead
+  unlockProjectLead,
+  generatePrototype
 } from './services/api.js';
 import styles from './App.module.css';
 
 export default function App() {
-  const [projectId] = useState('proj_123');
+  const [projectId, setProjectId] = useState('proj_123');
   const [currentPhase, setCurrentPhase] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedLogoId, setSelectedLogoId] = useState(null);
@@ -48,6 +50,9 @@ export default function App() {
     captured_at: null
   });
 
+  const [generatedPrototype, setGeneratedPrototype] = useState(null);
+  const [isGeneratingPrototype, setIsGeneratingPrototype] = useState(false);
+
   const [messages, setMessages] = useState([
     {
       id: 'msg_welcome',
@@ -56,6 +61,40 @@ export default function App() {
       text: '¡Hola! Soy tu consultor de diseño web con IA. Cuéntame sobre tu negocio para comenzar la Misión 1 (definir nombre, sector y paleta de colores).'
     }
   ]);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function initRealProject() {
+      if (projectId && /^[0-9a-fA-F]{24}$/.test(projectId)) return;
+      if (typeof createProject !== 'function') return;
+
+      try {
+        let storedSession = null;
+        try {
+          storedSession = localStorage.getItem('webcreator_session_id');
+          if (!storedSession) {
+            storedSession = `sess_${Math.random().toString(36).substring(2, 10)}`;
+            localStorage.setItem('webcreator_session_id', storedSession);
+          }
+        } catch {
+          storedSession = 'sess_default';
+        }
+
+        const res = await createProject(storedSession);
+        if (isMounted && res?.data?._id) {
+          setProjectId(res.data._id);
+        }
+      } catch (err) {
+        // Modo offline / fallback
+        console.warn('Inicialización offline/fallback de proyecto:', err.message);
+      }
+    }
+
+    initRealProject();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSendMessage = async (text) => {
     const userMsgId = 'msg_user_' + Date.now();
@@ -69,7 +108,24 @@ export default function App() {
     setIsLoading(true);
 
     try {
-      const response = await sendChatMessage(projectId, text);
+      let currentId = projectId;
+      if ((!currentId || !/^[0-9a-fA-F]{24}$/.test(currentId)) && typeof createProject === 'function') {
+        try {
+          const storedSession =
+            (typeof localStorage !== 'undefined' && localStorage.getItem('webcreator_session_id')) ||
+            `sess_${Math.random().toString(36).substring(2, 10)}`;
+          const created = await createProject(storedSession);
+          if (created?.data?._id) {
+            currentId = created.data._id;
+            setProjectId(currentId);
+          }
+        } catch {
+          // Fallback a ID actual
+        }
+      }
+
+      const targetId = currentId || 'proj_123';
+      const response = await sendChatMessage(targetId, text);
 
       if (response && response.reply) {
         const assistantMsg = {
@@ -82,6 +138,9 @@ export default function App() {
       }
 
       if (response.project) {
+        if (response.project._id) {
+          setProjectId(response.project._id);
+        }
         if (response.project.current_phase) {
           setCurrentPhase(response.project.current_phase);
         }
@@ -105,6 +164,9 @@ export default function App() {
             ...prev,
             ...response.project.lead_info
           }));
+        }
+        if (response.project.generated_prototype?.html_body) {
+          setGeneratedPrototype(response.project.generated_prototype);
         }
       }
 
@@ -179,6 +241,47 @@ export default function App() {
     }
   };
 
+  const handleGeneratePrototype = async () => {
+    setIsGeneratingPrototype(true);
+    try {
+      const result = await generatePrototype(projectId);
+      if (result && result.project?.generated_prototype) {
+        setGeneratedPrototype(result.project.generated_prototype);
+        setCurrentPhase(4);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: 'msg_proto_' + Date.now(),
+            role: 'assistant',
+            author: 'Ingeniero Frontend',
+            text: '🎉 ¡Tu prototipo web interactivo ha sido compilado exitosamente! Ahora puedes explorarlo y probar la interactividad en el visor sandbox a la derecha.'
+          }
+        ]);
+      }
+    } catch (err) {
+      console.error('Error al compilar prototipo:', err);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: 'msg_proto_err_' + Date.now(),
+          role: 'assistant',
+          author: 'Sistema',
+          text: `No fue posible generar el prototipo: ${err.message}`
+        }
+      ]);
+    } finally {
+      setIsGeneratingPrototype(false);
+    }
+  };
+
+  const handlePublishClick = () => {
+    const businessName = dynamicContent?.hero?.headline || 'mi negocio';
+    const whatsappUrl = `https://wa.me/573001234567?text=${encodeURIComponent(
+      `¡Hola! He generado mi prototipo interactivo para ${businessName} en WebCreator AI y deseo contratar el paquete de desarrollo profesional para publicarlo en producción.`
+    )}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className={styles.appContainer}>
       <ChatPanel
@@ -197,6 +300,10 @@ export default function App() {
         dynamicContent={dynamicContent}
         leadInfo={leadInfo}
         onUnlockLead={handleUnlockLead}
+        generatedPrototype={generatedPrototype}
+        onGeneratePrototype={handleGeneratePrototype}
+        isGeneratingPrototype={isGeneratingPrototype}
+        onPublishClick={handlePublishClick}
       />
     </div>
   );

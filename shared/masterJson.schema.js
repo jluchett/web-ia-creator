@@ -126,3 +126,14 @@ export const LeadInfoInputSchema = z.object({
   email: z.string().trim().email('El correo electrónico no es válido')
 });
 
+/**
+ * Esquema de validación para la salida estructurada del Agente 2 (Ingeniero Frontend).
+ * Valida el código compilado para el prototipo interactivo aislado.
+ */
+export const PrototypeOutputSchema = z.object({
+  html_body: z.string().min(10, 'El código HTML debe tener al menos 10 caracteres'),
+  custom_css: z.string().default(''),
+  vanilla_js: z.string().default('')
+});
+
+

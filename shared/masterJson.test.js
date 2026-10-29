@@ -3,7 +3,8 @@ import {
   MasterJsonSchema,
   BrandingSchema,
   CapabilitiesSchema,
-  DynamicContentSchema
+  DynamicContentSchema,
+  PrototypeOutputSchema
 } from './masterJson.schema.js';
 
 describe('Master JSON Contract & Schemas (SDD / TDD)', () => {
@@ -144,5 +145,55 @@ describe('Master JSON Contract & Schemas (SDD / TDD)', () => {
 
     const dynamicContentResult = DynamicContentSchema.safeParse(cafeDeLaBrisaFixture.dynamic_content);
     expect(dynamicContentResult.success).toBe(true);
+  });
+
+  describe('PrototypeOutputSchema (SDD - Módulo 4)', () => {
+    it('debe validar un prototipo estructurado válido emitido por el Agente 2', () => {
+      const validPrototype = {
+        html_body: '<header class="bg-brand-primary text-brand-text"><h1>Café de la Brisa</h1></header>',
+        custom_css: '.cart-drawer { transform: translateX(0); }',
+        vanilla_js: 'console.log("WebCreator AI Prototype Loaded");'
+      };
+
+      const result = PrototypeOutputSchema.safeParse(validPrototype);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.html_body).toContain('Café de la Brisa');
+        expect(result.data.custom_css).toContain('.cart-drawer');
+        expect(result.data.vanilla_js).toContain('WebCreator AI');
+      }
+    });
+
+    it('debe asignar valores por defecto de cadenas vacías si custom_css o vanilla_js son omitidos', () => {
+      const minimalPrototype = {
+        html_body: '<main><p>Contenido mínimo válido para el cuerpo</p></main>'
+      };
+
+      const result = PrototypeOutputSchema.safeParse(minimalPrototype);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.custom_css).toBe('');
+        expect(result.data.vanilla_js).toBe('');
+      }
+    });
+
+    it('debe fallar si html_body tiene menos de 10 caracteres o está ausente', () => {
+      const invalidShort = {
+        html_body: '<div>',
+        custom_css: '',
+        vanilla_js: ''
+      };
+
+      const resultShort = PrototypeOutputSchema.safeParse(invalidShort);
+      expect(resultShort.success).toBe(false);
+
+      const invalidMissing = {
+        custom_css: '',
+        vanilla_js: ''
+      };
+
+      const resultMissing = PrototypeOutputSchema.safeParse(invalidMissing);
+      expect(resultMissing.success).toBe(false);
+    });
   });
 });

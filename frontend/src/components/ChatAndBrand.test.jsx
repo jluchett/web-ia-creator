@@ -5,6 +5,7 @@ import * as apiService from '../services/api.js';
 
 // Mock del servicio de API frontend
 vi.mock('../services/api.js', () => ({
+  createProject: vi.fn().mockResolvedValue({ success: true, data: { _id: 'proj_123' } }),
   sendChatMessage: vi.fn(),
   updateProjectMasterJson: vi.fn(),
   fetchLogoOptions: vi.fn()

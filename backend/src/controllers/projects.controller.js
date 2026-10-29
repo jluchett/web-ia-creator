@@ -3,6 +3,7 @@ import { Project } from '../models/Project.model.js';
 import { runConsultantAgent } from '../agents/consultantAgent.js';
 import { generateLogoOptions } from '../tools/brandTools.js';
 import { resolveDynamicContentImages } from '../services/imageResolver.js';
+import { generatePrototypeCode } from '../agents/frontendEngineerAgent.js';
 
 const PartialMasterJsonSchema = MasterJsonSchema.deepPartial();
 
@@ -45,6 +46,7 @@ export const createProject = async (req, res) => {
       data: project
     });
   } catch (error) {
+    console.error('[Error Backend]:', error);
     return res.status(500).json({
       success: false,
       error: error.message
@@ -86,6 +88,7 @@ export const updateMasterJson = async (req, res) => {
       data: updated || project
     });
   } catch (error) {
+    console.error('[Error Backend]:', error);
     return res.status(500).json({
       success: false,
       error: error.message
@@ -113,6 +116,7 @@ export const handleProjectChat = async (req, res) => {
         currentMasterJson: project.master_json || {}
       });
     } catch (agentError) {
+      console.error('[Error Backend]:', agentError);
       // Interceptar error Zod ante alucinaciones de la IA (Violación SDD)
       if (agentError.name === 'ZodError' || agentError.issues) {
         return res.status(422).json({
@@ -179,6 +183,7 @@ export const handleProjectChat = async (req, res) => {
       project
     });
   } catch (error) {
+    console.error('[Error Backend]:', error);
     return res.status(500).json({
       success: false,
       error: error.message
@@ -214,6 +219,7 @@ export const getProjectLogoOptions = async (req, res) => {
       logo_options: logoOptions
     });
   } catch (error) {
+    console.error('[Error Backend]:', error);
     return res.status(500).json({
       success: false,
       error: error.message
@@ -257,9 +263,76 @@ export const unlockProjectLead = async (req, res) => {
       project
     });
   } catch (error) {
+    console.error('[Error Backend]:', error);
     return res.status(500).json({
       success: false,
       error: error.message
     });
   }
 };
+
+export const generateProjectPrototype = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { useFlagshipModel } = req.body || {};
+
+    const project = await Project.findById(id);
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        error: 'Project not found'
+      });
+    }
+
+    // Guardia de seguridad y presupuesto: Lead Gate
+    if (!project.lead_info || project.lead_info.is_unlocked !== true) {
+      return res.status(403).json({
+        success: false,
+        error: 'Acceso denegado: Se requiere desbloquear el Lead Gate antes de compilar el prototipo interactivo'
+      });
+    }
+
+    let prototypeResult;
+    try {
+      prototypeResult = await generatePrototypeCode({
+        masterJson: project.master_json || {},
+        useFlagshipModel: Boolean(useFlagshipModel)
+      });
+    } catch (agentError) {
+      console.error('[Error Backend]: Error en compilación de prototipo:', agentError);
+      if (agentError.name === 'ZodError' || agentError.issues) {
+        return res.status(422).json({
+          success: false,
+          error: 'Error de validación SDD en prototipo generado',
+          issues: agentError.issues || agentError.message
+        });
+      }
+      throw agentError;
+    }
+
+    const { html_body, custom_css, vanilla_js, model_used } = prototypeResult;
+
+    project.generated_prototype = {
+      model_used,
+      html_body,
+      custom_css,
+      vanilla_js
+    };
+    project.status = 'prototype_generated';
+    project.current_phase = 4;
+
+    await project.save();
+
+    return res.status(200).json({
+      success: true,
+      project
+    });
+  } catch (error) {
+    console.error('[Error Backend]:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+

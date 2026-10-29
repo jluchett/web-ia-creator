@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { IframePreview } from './IframePreview.jsx';
 import styles from './LiveCanvas.module.css';
 
 const MISSIONS = {
@@ -67,7 +68,11 @@ export function LiveCanvas({
   onToggleCapability = null,
   dynamicContent = null,
   leadInfo = null,
-  onUnlockLead = null
+  onUnlockLead = null,
+  generatedPrototype = null,
+  onGeneratePrototype = null,
+  isGeneratingPrototype = false,
+  onPublishClick = null
 }) {
   const currentMission = MISSIONS[currentPhase] || MISSIONS[1];
 
@@ -260,8 +265,57 @@ export function LiveCanvas({
         </section>
       ) : null}
 
-      {/* Wireframe Reactivo Estructurado con Contenidos Dinámicos (Nivel 3) */}
-      {dynamicContent && (dynamicContent.hero || (dynamicContent.products && dynamicContent.products.length > 0)) ? (
+      {/* Misión 4: Generación de Prototipo (Desbloqueado sin prototipo generado aún) */}
+      {currentPhase >= 4 && leadInfo?.is_unlocked === true && (!generatedPrototype || !generatedPrototype.html_body) && (
+        <section className={styles.generateCard} data-testid="generate-card">
+          <span className={styles.generateBadge}>Misión 4 • La Gran Revelación</span>
+          <h3 className={styles.generateTitle}>Compilación del Prototipo Vivo</h3>
+          <p className={styles.generateDesc}>
+            Tu Lead Gate está desbloqueado. El Agente 2 (Ingeniero Frontend con IA) compilará tu sitio web interactivo completo en HTML5, Tailwind CSS y JavaScript Vanilla.
+          </p>
+          <button
+            type="button"
+            className={styles.generateBtn}
+            onClick={() => onGeneratePrototype && onGeneratePrototype()}
+            disabled={isGeneratingPrototype}
+          >
+            {isGeneratingPrototype ? 'Compilando Prototipo con IA...' : 'Generar Prototipo Interactivo'}
+          </button>
+        </section>
+      )}
+
+      {/* Misión 4: Visor Sandbox Seguro (IframePreview) y Botón de Monetización */}
+      {currentPhase >= 4 && leadInfo?.is_unlocked === true && generatedPrototype && generatedPrototype.html_body ? (
+        <section className={styles.prototypeSection} data-testid="prototype-section">
+          <div className={styles.prototypeHeader}>
+            <span className={styles.prototypeBadge}>🚀 Prototipo Interactivo Vivo</span>
+            <h3 className={styles.prototypeTitle}>Vista Previa de tu Sitio Web</h3>
+          </div>
+          <IframePreview
+            branding={branding}
+            prototypeCode={generatedPrototype}
+          />
+          <div className={styles.monetizationCard} data-testid="monetization-card">
+            <div className={styles.monetizationInfo}>
+              <span className={styles.monetizationBadge}>💎 Oferta Exclusiva de Lanzamiento</span>
+              <h4 className={styles.monetizationTitle}>¿Listo para llevar este prototipo a producción?</h4>
+              <p className={styles.monetizationDesc}>
+                Convertimos este prototipo interactivo en un sitio web real con dominio personalizado, pasarela de pagos integrada, SEO avanzado y hosting de alto rendimiento ($300 - $1,500 USD).
+              </p>
+            </div>
+            <button
+              type="button"
+              className={styles.monetizationBtn}
+              onClick={() => onPublishClick && onPublishClick()}
+            >
+              Quiero publicar mi sitio web real y funcional
+            </button>
+          </div>
+        </section>
+      ) : null}
+
+      {/* Wireframe Reactivo Estructurado con Contenidos Dinámicos (Nivel 3 o Nivel 4 pre-compilación) */}
+      {(!generatedPrototype || !generatedPrototype.html_body) && dynamicContent && (dynamicContent.hero || (dynamicContent.products && dynamicContent.products.length > 0)) ? (
         <section className={styles.wireframeStructured} data-testid="wireframe-structured">
           {/* Sección Hero */}
           {dynamicContent.hero && (
@@ -329,13 +383,13 @@ export function LiveCanvas({
             </div>
           )}
         </section>
-      ) : (
+      ) : (!generatedPrototype || !generatedPrototype.html_body) ? (
         /* Wireframe Esqueleto Base cuando aún no hay contenido dinámico */
         <section className={styles.wireframePreview}>
           <p>Wireframe Esqueleto Reactivo</p>
           <small>Los cambios visuales de marca, superpoderes y contenidos se reflejan aquí en tiempo real.</small>
         </section>
-      )}
+      ) : null}
     </main>
   );
 }

@@ -2,7 +2,24 @@
  * Servicios HTTP para comunicación del Frontend con la API REST de WebCreator AI.
  */
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://localhost:5001/api';
+
+export async function createProject(userSessionId) {
+  const response = await fetch(`${API_BASE_URL}/projects`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ user_session_id: userSessionId })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Error al crear proyecto: ${response.status}`);
+  }
+
+  return response.json();
+}
 
 export async function sendChatMessage(projectId, message) {
   const response = await fetch(`${API_BASE_URL}/projects/${projectId}/chat`, {
@@ -15,7 +32,10 @@ export async function sendChatMessage(projectId, message) {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `Error en el chat: ${response.status}`);
+    const errorMsg = typeof errorData.error === 'string'
+      ? errorData.error
+      : (errorData.issues ? JSON.stringify(errorData.issues) : `Error en el chat: ${response.status}`);
+    throw new Error(errorMsg);
   }
 
   return response.json();
@@ -71,3 +91,21 @@ export async function unlockProjectLead(projectId, leadData) {
 
   return response.json();
 }
+
+export async function generatePrototype(projectId, options = {}) {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/generate-prototype`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(options)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Error al generar prototipo: ${response.status}`);
+  }
+
+  return response.json();
+}
+

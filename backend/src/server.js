@@ -1,7 +1,22 @@
+import dns from 'node:dns';
 import mongoose from 'mongoose';
 import app from './app.js';
 
-const PORT = process.env.PORT || 5000;
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch {
+  // Fallback si la configuración de DNS no permite override
+}
+
+if (!process.env.PORT && typeof process.loadEnvFile === 'function') {
+  try {
+    process.loadEnvFile();
+  } catch {
+    // Variables ya provistas por el entorno o flags CLI
+  }
+}
+
+const PORT = process.env.PORT || 5001;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/webcreator';
 
 async function startServer() {

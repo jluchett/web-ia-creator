@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styles from './ChatPanel.module.css';
 
 export function ChatPanel({
@@ -14,15 +14,44 @@ export function ChatPanel({
   isLoading = false
 }) {
   const [inputVal, setInputVal] = useState('');
+  const textareaRef = useRef(null);
+
+  const resetTextareaHeight = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+  };
+
+  const handleInput = (e) => {
+    setInputVal(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
+    }
+  };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!inputVal.trim() || isLoading) return;
     if (onSendMessage) {
-      onSendMessage(inputVal);
+      onSendMessage(inputVal.trim());
     }
     setInputVal('');
+    resetTextareaHeight();
   };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
+  useEffect(() => {
+    if (!inputVal) {
+      resetTextareaHeight();
+    }
+  }, [inputVal]);
 
   return (
     <aside className={styles.chatPanel} data-testid="chat-panel">
@@ -54,12 +83,14 @@ export function ChatPanel({
       </div>
 
       <form className={styles.inputContainer} onSubmit={handleSubmit}>
-        <input
-          type="text"
-          className={styles.input}
+        <textarea
+          ref={textareaRef}
+          rows={1}
+          className={styles.textarea}
           placeholder="Escribe tu respuesta o idea de negocio..."
           value={inputVal}
-          onChange={(e) => setInputVal(e.target.value)}
+          onChange={handleInput}
+          onKeyDown={handleKeyDown}
           disabled={isLoading}
         />
         <button
